@@ -35,11 +35,14 @@
 //! - See [freetype docs](http://www.freetype.org/freetype2/docs/reference/ft2-index.html)
 //!   for more information
 
+#![no_std]
+
 #![deny(missing_copy_implementations)]
 
 #[macro_use]
 extern crate bitflags;
 extern crate libc;
+extern crate null_terminated;
 pub extern crate freetype_sys;
 
 pub use bitmap::Bitmap;
@@ -68,3 +71,5 @@ pub type BBox = ffi::FT_BBox;
 pub type GlyphMetrics = ffi::FT_Glyph_Metrics;
 pub type Matrix = ffi::FT_Matrix;
 pub type Vector = ffi::FT_Vector;
+
+use null_terminated::Nul;

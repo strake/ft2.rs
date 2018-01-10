@@ -1,8 +1,8 @@
-use std::ffi::{ CString, OsStr };
-use std::ptr::null_mut;
+use core::ptr::null_mut;
 use libc::{ self, c_void, c_long, size_t };
-use { Face, FtResult, Error };
+use { Face, FtResult };
 use ffi;
+use ::Nul;
 
 extern "C" fn alloc_library(_memory: ffi::FT_Memory, size: c_long) -> *mut c_void {
     unsafe {
@@ -70,16 +70,12 @@ impl Library {
     /// Open a font file using its pathname. `face_index` should be 0 if there is only 1 font
     /// in the file.
     pub fn new_face<P>(&self, path: P, face_index: isize) -> FtResult<Face<'static>>
-        where P: AsRef<OsStr>
+        where P: AsRef<Nul<u8>>
     {
         let mut face = null_mut();
 
-        let path = try!(path.as_ref()
-                            .to_str()
-                            .and_then(|s| CString::new(s).ok())
-                            .ok_or(Error::InvalidPath));
         let err = unsafe {
-            ffi::FT_New_Face(self.raw, path.as_ptr() as *const _, face_index as ffi::FT_Long, &mut face)
+            ffi::FT_New_Face(self.raw, path.as_ref().as_ptr() as *const _, face_index as ffi::FT_Long, &mut face)
         };
         if err == ffi::FT_Err_Ok {
             Ok(unsafe { Face::from_raw(self.raw, face) })

@@ -1,7 +1,7 @@
-use std::fmt;
-use std::ffi::CStr;
+use core::fmt;
 use { ffi, FtResult, GlyphSlot, Matrix, Vector };
-use std::marker::PhantomData;
+use core::marker::PhantomData;
+use ::Nul;
 
 #[repr(u32)]
 #[derive(Copy, Clone)]
@@ -302,30 +302,14 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub fn family_name(&self) -> Option<String> {
-        let family_name = unsafe { (*self.raw).family_name };
-
-        if family_name.is_null() {
-            None
-        } else {
-            let family_name = unsafe {
-                CStr::from_ptr(family_name as *const _).to_bytes().to_vec()
-            };
-            String::from_utf8(family_name).ok()
-        }
+    pub fn family_name(&self) -> Option<&Nul<u8>> {
+        unsafe { ((*self.raw).family_name as *mut u8).as_ref() }
+            .map(|p| unsafe { Nul::new_unchecked(p) })
     }
 
-    pub fn style_name(&self) -> Option<String> {
-        let style_name = unsafe { (*self.raw).style_name };
-
-        if style_name.is_null() {
-            None
-        } else {
-            let style_name = unsafe {
-                CStr::from_ptr(style_name as *const _).to_bytes().to_vec()
-            };
-            String::from_utf8(style_name).ok()
-        }
+    pub fn style_name(&self) -> Option<&Nul<u8>> {
+        unsafe { ((*self.raw).style_name as *mut u8).as_ref() }
+            .map(|p| unsafe { Nul::new_unchecked(p) })
     }
 
     pub fn size_metrics(&self) -> Option<ffi::FT_Size_Metrics> {
@@ -341,22 +325,17 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub fn postscript_name(&self) -> Option<String> {
-        let face_name = unsafe { ffi::FT_Get_Postscript_Name(self.raw) };
-        if face_name.is_null() {
-            None
-        } else {
-            let face_name = unsafe {
-                CStr::from_ptr(face_name as *const _).to_bytes().to_vec()
-            };
-            String::from_utf8(face_name).ok()
-        }
+    pub fn postscript_name(&self) -> Option<&Nul<u8>> {
+        unsafe { (ffi::FT_Get_Postscript_Name(self.raw) as *mut u8).as_ref() }
+            .map(|p| unsafe { Nul::new_unchecked(p) })
     }
 }
 
 impl<'a> fmt::Debug for Face<'a> {
     fn fmt(&self, form: &mut fmt::Formatter) -> fmt::Result {
-        let name = self.style_name().unwrap_or("[unknown name]".to_owned());
+        let name = self.style_name()
+                       .and_then(|s| ::core::str::from_utf8(&s[..]).ok())
+                       .unwrap_or("[unknown name]");
         try!(form.write_str("Font Face: "));
         form.write_str(&name[..])
     }

@@ -1,5 +1,4 @@
-use std::fmt;
-use std::error;
+use core::fmt;
 use ffi;
 
 pub type FtResult<T> = Result<T, Error>;
@@ -204,12 +203,12 @@ impl From<i32> for Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(error::Error::description(self))
+        f.write_str(self.describe())
     }
 }
 
-impl error::Error for Error {
-    fn description(&self) -> &str {
+impl Error {
+    fn describe(&self) -> &str {
         use self::Error::*;
         match *self {
             Ok                           => "Ok",

@@ -1,4 +1,4 @@
-use std::slice;
+use core::slice;
 use { ffi, FtResult, Error };
 
 /// An enumeration type used to describe the format of pixels in a given bitmap. Note that

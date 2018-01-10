@@ -1,5 +1,5 @@
-use std::slice;
-use std::marker::PhantomData;
+use core::slice;
+use core::marker::PhantomData;
 use libc::{ c_short, c_char };
 use { ffi, Vector };
 

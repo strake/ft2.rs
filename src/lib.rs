@@ -55,6 +55,7 @@ pub use glyph_slot::GlyphSlot;
 pub use library::{LcdFilter, Library};
 pub use outline::Outline;
 pub use render_mode::RenderMode;
+pub use stroker::{Stroker, StrokerLineCap, StrokerLineJoin };
 pub use freetype_sys as ffi;
 
 pub mod bitmap;
@@ -66,6 +67,7 @@ pub mod glyph_slot;
 pub mod library;
 pub mod outline;
 pub mod render_mode;
+pub mod stroker;
 pub mod tt_os2;
 
 pub type BBox = ffi::FT_BBox;

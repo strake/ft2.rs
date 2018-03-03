@@ -1,5 +1,5 @@
 use core::ptr::null_mut;
-use {ffi, BBox, BitmapGlyph, FtResult, Matrix, RenderMode, Vector};
+use {ffi, BBox, BitmapGlyph, FtResult, Matrix, RenderMode, Stroker, Vector};
 
 /// Represents a retrieved glyph from the library
 ///
@@ -61,6 +61,24 @@ impl Glyph {
         Ok(unsafe {
             ::error::from_ftret(ffi::FT_Glyph_To_Bitmap(&mut the_glyph, render_mode as u32, p_origin, 0))?;
             BitmapGlyph::from_raw(self.library_raw, the_glyph as ffi::FT_BitmapGlyph)
+        })
+    }
+
+    pub fn stroke(&self, stroker: &Stroker) -> FtResult<Glyph> {
+        let mut the_glyph = self.raw;
+
+        Ok(unsafe {
+            ::error::from_ftret(ffi::FT_Glyph_Stroke(&mut the_glyph, stroker.raw_stroker(), false as ffi::FT_Bool))?;
+            Glyph::from_raw(self.library_raw, the_glyph)
+        })
+    }
+
+    pub fn stroke_border(&self, stroker: &Stroker, inside: bool) -> FtResult<Glyph> {
+        let mut the_glyph = self.raw;
+
+        Ok(unsafe {
+            ::error::from_ftret(ffi::FT_Glyph_StrokeBorder(&mut the_glyph, stroker.raw_stroker(), inside as ffi::FT_Bool, false as ffi::FT_Bool))?;
+            Glyph::from_raw(self.library_raw, the_glyph)
         })
     }
 

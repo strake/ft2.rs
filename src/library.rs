@@ -1,6 +1,6 @@
 use core::ptr::null_mut;
 use libc::{self, c_long, c_void, size_t};
-use {Face, FtResult};
+use {Face, FtResult, Stroker};
 use ffi;
 use Nul;
 
@@ -57,6 +57,12 @@ impl Library {
         let mut face = null_mut();
         ::error::from_ftret(ffi::FT_New_Face(self.raw, path.as_ref().as_ptr() as *const _, face_index as ffi::FT_Long, &mut face))?;
         Ok(Face::from_raw(self.raw, face))
+    } }
+
+    pub fn new_stroker(&self) -> FtResult<Stroker> { unsafe {
+        let mut stroker = null_mut();
+        ::error::from_ftret(ffi::FT_Stroker_New(self.raw, &mut stroker))?;
+        Ok(Stroker::from_raw(self.raw, stroker))
     } }
 
     /// Similar to `new_face`, but loads file data from a byte array in memory

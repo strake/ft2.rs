@@ -1,6 +1,6 @@
 [package]
 name = "ft2"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Coeuvre <coeuvre@gmail.com>", "M Farkas-Dyck <strake888@gmail.com>"]
 keywords = ["freetype", "font", "glyph"]
 description = "Bonds for FreeType font library"
@@ -12,9 +12,9 @@ repository = "https://github.com/strake/ft2.rs"
 name = "freetype"
 
 [dependencies]
-bitflags = "1.0.0"
+flags = "0.1"
 libc = { version = "0.2.1", default-features = false }
-null-terminated = "0.2.7"
+null-terminated = "0.3"
 freetype-sys = "0.6.0"
 
 [dev-dependencies]

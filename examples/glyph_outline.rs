@@ -9,7 +9,7 @@ fn draw_curve(curve: ft::outline::Curve) {
         ft::outline::Curve::Bezier3(pt1, pt2, pt3) =>
             println!("C {} {} {} {} {} {}", pt1.x, -pt1.y,
                                             pt2.x, -pt2.y,
-                                            pt3.x, -pt3.y)
+                                            pt3.x, -pt3.y),
     }
 }
 

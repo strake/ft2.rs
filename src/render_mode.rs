@@ -8,5 +8,5 @@ pub enum RenderMode {
     Mono   = ffi::FT_RENDER_MODE_MONO,
     Lcd    = ffi::FT_RENDER_MODE_LCD,
     LcdV   = ffi::FT_RENDER_MODE_LCD_V,
-    Max    = ffi::FT_RENDER_MODE_MAX
+    Max    = ffi::FT_RENDER_MODE_MAX,
 }

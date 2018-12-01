@@ -1,14 +1,14 @@
 use core::fmt;
-use { ffi, FtResult, GlyphSlot, Matrix, Vector };
 use core::marker::PhantomData;
-use ::Nul;
+use Nul;
+use {ffi, FtResult, GlyphSlot, Matrix, Vector};
 
 #[repr(u32)]
 #[derive(Copy, Clone)]
 pub enum KerningMode {
     KerningDefault  = ffi::FT_KERNING_DEFAULT,
     KerningUnfitted = ffi::FT_KERNING_UNFITTED,
-    KerningUnscaled = ffi::FT_KERNING_UNSCALED
+    KerningUnscaled = ffi::FT_KERNING_UNSCALED,
 }
 
 bitflags! {
@@ -47,15 +47,11 @@ pub struct Face<'a> {
 
 impl<'a> Clone for Face<'a> {
     fn clone(&self) -> Self {
-        let err = unsafe {
-            ffi::FT_Reference_Library(self.library_raw)
-        };
+        let err = unsafe { ffi::FT_Reference_Library(self.library_raw) };
         if err != ffi::FT_Err_Ok {
             panic!("Failed to reference library");
         }
-        let err = unsafe {
-            ffi::FT_Reference_Face(self.raw)
-        };
+        let err = unsafe { ffi::FT_Reference_Face(self.raw) };
         if err != ffi::FT_Err_Ok {
             panic!("Failed to reference face");
         }
@@ -67,17 +63,14 @@ impl<'a> Face<'a> {
     pub unsafe fn from_raw(library_raw: ffi::FT_Library, raw: ffi::FT_Face) -> Self {
         ffi::FT_Reference_Library(library_raw);
         Face {
-            library_raw: library_raw,
-            raw: raw,
+            library_raw, raw,
             glyph: GlyphSlot::from_raw(library_raw, (*raw).glyph),
             _phantom: PhantomData
         }
     }
 
     pub fn attach_file(&self, filepathname: &str) -> FtResult<()> {
-        let err = unsafe {
-            ffi::FT_Attach_File(self.raw, filepathname.as_ptr() as *const _)
-        };
+        let err = unsafe { ffi::FT_Attach_File(self.raw, filepathname.as_ptr() as *const _) };
         if err == ffi::FT_Err_Ok {
             Ok(())
         } else {
@@ -86,9 +79,7 @@ impl<'a> Face<'a> {
     }
 
     pub fn reference(&self) -> FtResult<()> {
-        let err = unsafe {
-            ffi::FT_Reference_Face(self.raw)
-        };
+        let err = unsafe { ffi::FT_Reference_Face(self.raw) };
         if err == ffi::FT_Err_Ok {
             Ok(())
         } else {
@@ -111,9 +102,7 @@ impl<'a> Face<'a> {
     }
 
     pub fn set_pixel_sizes(&self, pixel_width: u32, pixel_height: u32) -> FtResult<()> {
-        let err = unsafe {
-            ffi::FT_Set_Pixel_Sizes(self.raw, pixel_width, pixel_height)
-        };
+        let err = unsafe { ffi::FT_Set_Pixel_Sizes(self.raw, pixel_width, pixel_height) };
         if err == ffi::FT_Err_Ok {
             Ok(())
         } else {
@@ -122,9 +111,7 @@ impl<'a> Face<'a> {
     }
 
     pub fn load_glyph(&self, glyph_index: u32, load_flags: LoadFlag) -> FtResult<()> {
-        let err = unsafe {
-            ffi::FT_Load_Glyph(self.raw, glyph_index, load_flags.bits)
-        };
+        let err = unsafe { ffi::FT_Load_Glyph(self.raw, glyph_index, load_flags.bits) };
         if err == ffi::FT_Err_Ok {
             Ok(())
         } else {
@@ -133,9 +120,8 @@ impl<'a> Face<'a> {
     }
 
     pub fn load_char(&self, char_code: usize, load_flags: LoadFlag) -> FtResult<()> {
-        let err = unsafe {
-            ffi::FT_Load_Char(self.raw, char_code as ffi::FT_ULong, load_flags.bits)
-        };
+        let err =
+            unsafe { ffi::FT_Load_Char(self.raw, char_code as ffi::FT_ULong, load_flags.bits) };
         if err == ffi::FT_Err_Ok {
             Ok(())
         } else {
@@ -150,9 +136,7 @@ impl<'a> Face<'a> {
     }
 
     pub fn get_char_index(&self, charcode: usize) -> u32 {
-        unsafe {
-            ffi::FT_Get_Char_Index(self.raw, charcode as ffi::FT_ULong)
-        }
+        unsafe { ffi::FT_Get_Char_Index(self.raw, charcode as ffi::FT_ULong) }
     }
 
     pub fn get_kerning(&self, left_char_index: u32, right_char_index: u32, kern_mode: KerningMode)
@@ -234,72 +218,52 @@ impl<'a> Face<'a> {
 
     #[inline(always)]
     pub fn raw(&self) -> &ffi::FT_FaceRec {
-        unsafe {
-            &*self.raw
-        }
+        unsafe { &*self.raw }
     }
 
     #[inline(always)]
     pub fn raw_mut(&mut self) -> &mut ffi::FT_FaceRec {
-        unsafe {
-            &mut *self.raw
-        }
+        unsafe { &mut *self.raw }
     }
 
     #[inline(always)]
     pub fn ascender(&self) -> ffi::FT_Short {
-        unsafe {
-            (*self.raw).ascender
-        }
+        unsafe { (*self.raw).ascender }
     }
 
     #[inline(always)]
     pub fn descender(&self) -> ffi::FT_Short {
-        unsafe {
-            (*self.raw).descender
-        }
+        unsafe { (*self.raw).descender }
     }
 
     #[inline(always)]
     pub fn em_size(&self) -> ffi::FT_Short {
-        unsafe {
-            (*self.raw).units_per_EM as i16
-        }
+        unsafe { (*self.raw).units_per_EM as i16 }
     }
 
     #[inline(always)]
     pub fn height(&self) -> ffi::FT_Short {
-        unsafe {
-            (*self.raw).height
-        }
+        unsafe { (*self.raw).height }
     }
 
     #[inline(always)]
     pub fn max_advance_width(&self) -> ffi::FT_Short {
-        unsafe {
-            (*self.raw).max_advance_width
-        }
+        unsafe { (*self.raw).max_advance_width }
     }
 
     #[inline(always)]
     pub fn max_advance_height(&self) -> ffi::FT_Short {
-        unsafe {
-            (*self.raw).max_advance_height
-        }
+        unsafe { (*self.raw).max_advance_height }
     }
 
     #[inline(always)]
     pub fn underline_position(&self) -> ffi::FT_Short {
-        unsafe {
-            (*self.raw).underline_position
-        }
+        unsafe { (*self.raw).underline_position }
     }
 
     #[inline(always)]
     pub fn underline_thickness(&self) -> ffi::FT_Short {
-        unsafe {
-            (*self.raw).underline_thickness
-        }
+        unsafe { (*self.raw).underline_thickness }
     }
 
     pub fn family_name(&self) -> Option<&Nul<u8>> {
@@ -343,15 +307,11 @@ impl<'a> fmt::Debug for Face<'a> {
 
 impl<'a> Drop for Face<'a> {
     fn drop(&mut self) {
-        let err = unsafe {
-            ffi::FT_Done_Face(self.raw)
-        };
+        let err = unsafe { ffi::FT_Done_Face(self.raw) };
         if err != ffi::FT_Err_Ok {
             panic!("Failed to drop face");
         }
-        let err = unsafe {
-            ffi::FT_Done_Library(self.library_raw)
-        };
+        let err = unsafe { ffi::FT_Done_Library(self.library_raw) };
         if err != ffi::FT_Err_Ok {
             panic!("Failed to drop library")
         }

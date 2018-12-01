@@ -47,11 +47,11 @@ pub extern crate freetype_sys;
 
 pub use bitmap::Bitmap;
 pub use bitmap_glyph::BitmapGlyph;
-pub use error::{ FtResult, Error };
+pub use error::{Error, FtResult};
 pub use face::Face;
 pub use glyph::Glyph;
 pub use glyph_slot::GlyphSlot;
-pub use library::{ Library, LcdFilter };
+pub use library::{LcdFilter, Library};
 pub use outline::Outline;
 pub use render_mode::RenderMode;
 pub use freetype_sys as ffi;

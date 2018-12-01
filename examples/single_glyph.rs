@@ -14,8 +14,8 @@ fn draw_bitmap(bitmap: ft::Bitmap, x: usize, y: usize) -> [[u8; WIDTH]; HEIGHT] 
     let x_max = x + w;
     let y_max = y + bitmap.rows() as usize;
 
-    for i in x .. x_max {
-        for j in y .. y_max {
+    for i in x..x_max {
+        for j in y..y_max {
             if i < WIDTH && j < HEIGHT {
                 figure[j][i] |= bitmap.buffer()[q * w + p];
                 q += 1;
@@ -49,15 +49,13 @@ fn main() {
     let y = HEIGHT - glyph.bitmap_top() as usize;
     let figure = draw_bitmap(glyph.bitmap(), x, y);
 
-    for i in 0 .. HEIGHT {
-        for j in 0 .. WIDTH {
-            print!("{}",
-                match figure[i][j] {
-                    p if p == 0 => " ",
-                    p if p < 128 => "*",
-                    _  => "+"
-                }
-            );
+    for i in 0..HEIGHT {
+        for j in 0..WIDTH {
+            print!("{}", match figure[i][j] {
+                p if p == 0 => " ",
+                p if p < 128 => "*",
+                _ => "+",
+            });
         }
         println!("");
     }

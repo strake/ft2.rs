@@ -1,5 +1,5 @@
 use core::slice;
-use { ffi, FtResult, Error };
+use {ffi, Error, FtResult};
 
 /// An enumeration type used to describe the format of pixels in a given bitmap. Note that
 /// additional formats may be added in the future.
@@ -45,19 +45,17 @@ pub enum PixelMode {
     /// channels are pre-multiplied and in the sRGB colorspace. For example,
     /// full red at half-translucent opacity will be represented as
     /// `00,00,80,80`, not `00,00,FF,80`. See also FT_LOAD_COLOR.
-    Bgra
+    Bgra,
 }
 
 #[allow(missing_copy_implementations)]
 pub struct Bitmap {
-    raw: *const ffi::FT_Bitmap
+    raw: *const ffi::FT_Bitmap,
 }
 
 impl Bitmap {
     pub unsafe fn from_raw(raw: *const ffi::FT_Bitmap) -> Self {
-        Bitmap {
-            raw: raw
-        }
+        Bitmap { raw }
     }
 
     /// A typeless pointer to the bitmap buffer. This value should be aligned
@@ -73,22 +71,16 @@ impl Bitmap {
 
     /// The number of pixels in bitmap row.
     pub fn width(&self) -> i32 {
-        unsafe {
-            (*self.raw).width
-        }
+        unsafe { (*self.raw).width }
     }
 
     /// The number of bitmap rows.
     pub fn rows(&self) -> i32 {
-        unsafe {
-            (*self.raw).rows
-        }
+        unsafe { (*self.raw).rows }
     }
 
     pub fn raw(&self) -> &ffi::FT_Bitmap {
-        unsafe {
-            &*self.raw
-        }
+        unsafe { &*self.raw }
     }
 
     /// The pixel mode, i.e., how pixel bits are stored. See `PixelMode` for
@@ -122,8 +114,6 @@ impl Bitmap {
     /// Alternatively, you might use callback functions to directly render to the application's
     /// surface; see the file ‘example2.cpp’ in the tutorial for a demonstration.
     pub fn pitch(&self) -> i32 {
-        unsafe {
-            (*self.raw).pitch
-        }
+        unsafe { (*self.raw).pitch }
     }
 }

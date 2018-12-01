@@ -1,28 +1,22 @@
 use core::ptr::null_mut;
-use libc::{ self, c_void, c_long, size_t };
-use { Face, FtResult };
+use libc::{self, c_long, c_void, size_t};
+use {Face, FtResult};
 use ffi;
-use ::Nul;
+use Nul;
 
 extern "C" fn alloc_library(_memory: ffi::FT_Memory, size: c_long) -> *mut c_void {
-    unsafe {
-        libc::malloc(size as size_t)
-    }
+    unsafe { libc::malloc(size as size_t) }
 }
 
 extern "C" fn free_library(_memory: ffi::FT_Memory, block: *mut c_void) {
-    unsafe {
-        libc::free(block)
-    }
+    unsafe { libc::free(block) }
 }
 
 extern "C" fn realloc_library(_memory: ffi::FT_Memory,
                               _cur_size: c_long,
                               new_size: c_long,
                               block: *mut c_void) -> *mut c_void {
-    unsafe {
-        libc::realloc(block, new_size as size_t)
-    }
+    unsafe { libc::realloc(block, new_size as size_t) }
 }
 
 #[repr(u32)]
@@ -31,14 +25,14 @@ pub enum LcdFilter {
     LcdFilterNone    = ffi::FT_LCD_FILTER_NONE,
     LcdFilterDefault = ffi::FT_LCD_FILTER_DEFAULT,
     LcdFilterLight   = ffi::FT_LCD_FILTER_LIGHT,
-    LcdFilterLegacy  = ffi::FT_LCD_FILTER_LEGACY
+    LcdFilterLegacy  = ffi::FT_LCD_FILTER_LEGACY,
 }
 
 static mut MEMORY: ffi::FT_MemoryRec = ffi::FT_MemoryRec {
     user: 0 as *mut c_void,
     alloc: alloc_library,
     free: free_library,
-    realloc: realloc_library
+    realloc: realloc_library,
 };
 
 pub struct Library {
@@ -52,16 +46,10 @@ impl Library {
     pub fn init() -> FtResult<Self> {
         let mut raw = null_mut();
 
-        let err = unsafe {
-            ffi::FT_New_Library(&mut MEMORY, &mut raw)
-        };
+        let err = unsafe { ffi::FT_New_Library(&mut MEMORY, &mut raw) };
         if err == ffi::FT_Err_Ok {
-            unsafe {
-                ffi::FT_Add_Default_Modules(raw);
-            }
-            Ok(Library {
-                raw: raw
-            })
+            unsafe { ffi::FT_Add_Default_Modules(raw); }
+            Ok(Library { raw })
         } else {
             Err(err.into())
         }
@@ -100,9 +88,7 @@ impl Library {
     }
 
     pub fn set_lcd_filter(&self, lcd_filter: LcdFilter) -> FtResult<()> {
-        let err = unsafe {
-            ffi::FT_Library_SetLcdFilter(self.raw, lcd_filter as u32)
-        };
+        let err = unsafe { ffi::FT_Library_SetLcdFilter(self.raw, lcd_filter as u32) };
         if err == ffi::FT_Err_Ok {
             Ok(())
         } else {
@@ -111,16 +97,12 @@ impl Library {
     }
 
     /// Get the underlying library object
-    pub fn raw(&self) -> ffi::FT_Library {
-        self.raw
-    }
+    pub fn raw(&self) -> ffi::FT_Library { self.raw }
 }
 
 impl Drop for Library {
     fn drop(&mut self) {
-        let err = unsafe {
-            ffi::FT_Done_Library(self.raw)
-        };
+        let err = unsafe { ffi::FT_Done_Library(self.raw) };
         if err != ffi::FT_Err_Ok {
             panic!("Failed to drop library")
         }

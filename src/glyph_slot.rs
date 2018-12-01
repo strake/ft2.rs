@@ -1,14 +1,5 @@
 use core::ptr::null_mut;
-use {
-    ffi,
-    Bitmap,
-    FtResult,
-    Glyph,
-    GlyphMetrics,
-    Outline,
-    RenderMode,
-    Vector
-};
+use {ffi, Bitmap, FtResult, Glyph, GlyphMetrics, Outline, RenderMode, Vector};
 
 /// A description of a given subglyph returned by `GlyphSlot::get_subglyph_info`
 /// function.
@@ -23,7 +14,7 @@ pub struct SubGlyphInfo {
     /// The subglyph's second argument (if any).
     pub arg2: i32,
     /// The subglyph transformation (if any).
-    pub transfrom: ffi::FT_Matrix
+    pub transfrom: ffi::FT_Matrix,
 }
 
 impl Default for SubGlyphInfo {
@@ -48,18 +39,13 @@ pub struct GlyphSlot {
 impl GlyphSlot {
     /// Create a `GlyphSlot` from its constituent C parts
     pub unsafe fn from_raw(library_raw: ffi::FT_Library, raw: ffi::FT_GlyphSlot) -> Self {
-        GlyphSlot {
-            library_raw: library_raw,
-            raw: raw
-        }
+        GlyphSlot { library_raw, raw }
     }
 
     /// Convert a given glyph image to a bitmap. It does so by inspecting the glyph image format,
     /// finding the relevant renderer, and invoking it.
     pub fn render_glyph(&self, render_mode: RenderMode) -> FtResult<()> {
-        let err = unsafe {
-            ffi::FT_Render_Glyph(self.raw, render_mode as u32)
-        };
+        let err = unsafe { ffi::FT_Render_Glyph(self.raw, render_mode as u32) };
         if err == ffi::FT_Err_Ok {
             Ok(())
         } else {
@@ -86,9 +72,7 @@ impl GlyphSlot {
     pub fn get_glyph(&self) -> FtResult<Glyph> {
         let mut aglyph = null_mut();
 
-        let err = unsafe {
-            ffi::FT_Get_Glyph(self.raw, &mut aglyph)
-        };
+        let err = unsafe { ffi::FT_Get_Glyph(self.raw, &mut aglyph) };
         if err == ffi::FT_Err_Ok {
             Ok(unsafe { Glyph::from_raw(self.library_raw, aglyph) })
         } else {
@@ -103,9 +87,7 @@ impl GlyphSlot {
         let format = unsafe { (*self.raw).format };
 
         if format == ffi::FT_GLYPH_FORMAT_OUTLINE {
-            let outline = unsafe {
-                Outline::from_raw(outline)
-            };
+            let outline = unsafe { Outline::from_raw(outline) };
             Some(outline)
         } else {
             None
@@ -125,18 +107,14 @@ impl GlyphSlot {
     /// FT_GLYPH_FORMAT_BITMAP, this is, if the glyph slot contains a bitmap.
     #[inline(always)]
     pub fn bitmap_left(&self) -> i32 {
-        unsafe {
-            (*self.raw).bitmap_left
-        }
+        unsafe { (*self.raw).bitmap_left }
     }
 
     /// The bitmap's top bearing expressed in integer pixels. Remember that this is the distance
     /// from the baseline to the top-most glyph scanline, upwards y coordinates being positive.
     #[inline(always)]
     pub fn bitmap_top(&self) -> i32 {
-        unsafe {
-            (*self.raw).bitmap_top
-        }
+        unsafe { (*self.raw).bitmap_top }
     }
 
     /// This shorthand is, depending on FT_LOAD_IGNORE_TRANSFORM, the transformed (hinted) advance
@@ -145,9 +123,7 @@ impl GlyphSlot {
     /// ‘metrics’ field.
     #[inline(always)]
     pub fn advance(&self) -> Vector {
-        unsafe {
-            (*self.raw).advance
-        }
+        unsafe { (*self.raw).advance }
     }
 
     /// The advance width of the unhinted glyph. Its value is expressed in 16.16 fractional pixels,
@@ -155,9 +131,7 @@ impl GlyphSlot {
     /// perform correct WYSIWYG layout. Only relevant for outline glyphs.
     #[inline(always)]
     pub fn linear_hori_advance(&self) -> ffi::FT_Fixed {
-        unsafe {
-            (*self.raw).linearHoriAdvance
-        }
+        unsafe { (*self.raw).linearHoriAdvance }
     }
 
     /// The advance height of the unhinted glyph. Its value is expressed in 16.16 fractional
@@ -165,9 +139,7 @@ impl GlyphSlot {
     /// important to perform correct WYSIWYG layout. Only relevant for outline glyphs.
     #[inline(always)]
     pub fn linear_vert_advance(&self) -> ffi::FT_Fixed {
-        unsafe {
-            (*self.raw).linearVertAdvance
-        }
+        unsafe { (*self.raw).linearVertAdvance }
     }
 
     /// The metrics of the last loaded glyph in the slot. The returned values depend on the last
@@ -175,16 +147,12 @@ impl GlyphSlot {
     /// fractional pixels or font units.
     #[inline(always)]
     pub fn metrics(&self) -> GlyphMetrics {
-        unsafe {
-            (*self.raw).metrics
-        }
+        unsafe { (*self.raw).metrics }
     }
 
     /// Get a pointer to the underlying c struct
     #[inline(always)]
     pub fn raw(&self) -> &ffi::FT_GlyphSlotRec {
-        unsafe {
-            &*self.raw
-        }
+        unsafe { &*self.raw }
     }
 }

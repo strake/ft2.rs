@@ -45,39 +45,26 @@ impl GlyphSlot {
     /// Convert a given glyph image to a bitmap. It does so by inspecting the glyph image format,
     /// finding the relevant renderer, and invoking it.
     pub fn render_glyph(&self, render_mode: RenderMode) -> FtResult<()> {
-        let err = unsafe { ffi::FT_Render_Glyph(self.raw, render_mode as u32) };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Render_Glyph(self.raw, render_mode as u32) })
     }
 
     /// Retrieve a description of a given subglyph. Only use it if the glyph's format is
     /// FT_GLYPH_FORMAT_COMPOSITE; an error is returned otherwise.
     pub fn get_subglyph_info(&self, sub_index: u32) -> FtResult<SubGlyphInfo> {
         let mut info = SubGlyphInfo::default();
-        let err = unsafe {
+        ::error::from_ftret(unsafe {
             ffi::FT_Get_SubGlyph_Info(self.raw, sub_index, &mut info.index, &mut info.flags,
                                       &mut info.arg1, &mut info.arg2, &mut info.transfrom)
-        };
-        if err == ffi::FT_Err_Ok {
-            Ok(info)
-        } else {
-            Err(err.into())
-        }
+        })?;
+        Ok(info)
     }
 
     /// Returns a glyph object, that is similar to a `GlyphSlot` but managed outside of the library
     pub fn get_glyph(&self) -> FtResult<Glyph> {
         let mut aglyph = null_mut();
 
-        let err = unsafe { ffi::FT_Get_Glyph(self.raw, &mut aglyph) };
-        if err == ffi::FT_Err_Ok {
-            Ok(unsafe { Glyph::from_raw(self.library_raw, aglyph) })
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Get_Glyph(self.raw, &mut aglyph) })?;
+        Ok(unsafe { Glyph::from_raw(self.library_raw, aglyph) })
     }
 
     /// In freetype, the `Outline` object is a scalable glyph. This method unpacks a glyph into

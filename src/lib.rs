@@ -41,6 +41,7 @@
 
 #[macro_use]
 extern crate bitflags;
+extern crate fallible;
 extern crate libc;
 extern crate null_terminated;
 pub extern crate freetype_sys;

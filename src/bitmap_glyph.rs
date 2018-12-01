@@ -27,27 +27,18 @@ impl BitmapGlyph {
     pub fn raw(&self) -> &ffi::FT_BitmapGlyphRec { unsafe { &*self.raw } }
 }
 
-impl Clone for BitmapGlyph {
-    fn clone(&self) -> Self {
+impl ::fallible::TryClone for BitmapGlyph {
+    type Error = ::error::Error;
+    fn try_clone(&self) -> ::FtResult<Self> { unsafe {
         let mut target = null_mut();
-
-        let err = unsafe { ffi::FT_Glyph_Copy(self.raw as ffi::FT_Glyph, &mut target) };
-        if err == ffi::FT_Err_Ok {
-            unsafe { BitmapGlyph::from_raw(self.library_raw, target as ffi::FT_BitmapGlyph) }
-        } else {
-            panic!("Failed to copy bitmap glyph")
-        }
-    }
+        ::error::from_ftret(ffi::FT_Glyph_Copy(self.raw as ffi::FT_Glyph, &mut target))?;
+        Ok(BitmapGlyph::from_raw(self.library_raw, target as ffi::FT_BitmapGlyph))
+    } }
 }
 
 impl Drop for BitmapGlyph {
-    fn drop(&mut self) {
-        let err = unsafe {
-            ffi::FT_Done_Glyph(self.raw as ffi::FT_Glyph);
-            ffi::FT_Done_Library(self.library_raw)
-        };
-        if err != ffi::FT_Err_Ok {
-            panic!("Failed to drop bitmap glyph")
-        }
-    }
+    fn drop(&mut self) { unsafe {
+        ffi::FT_Done_Glyph(self.raw as ffi::FT_Glyph);
+        ::error::from_ftret(ffi::FT_Done_Library(self.library_raw)).expect("Failed to drop bitmap glyph");
+    } }
 }

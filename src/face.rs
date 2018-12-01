@@ -45,18 +45,13 @@ pub struct Face<'a> {
     _phantom: PhantomData<&'a ()>
 }
 
-impl<'a> Clone for Face<'a> {
-    fn clone(&self) -> Self {
-        let err = unsafe { ffi::FT_Reference_Library(self.library_raw) };
-        if err != ffi::FT_Err_Ok {
-            panic!("Failed to reference library");
-        }
-        let err = unsafe { ffi::FT_Reference_Face(self.raw) };
-        if err != ffi::FT_Err_Ok {
-            panic!("Failed to reference face");
-        }
-        Face { ..*self }
-    }
+impl<'a> ::fallible::TryClone for Face<'a> {
+    type Error = ::error::Error;
+    fn try_clone(&self) -> FtResult<Self> { unsafe {
+        ::error::from_ftret(ffi::FT_Reference_Library(self.library_raw))?;
+        ::error::from_ftret(ffi::FT_Reference_Face(self.raw))?;
+        Ok(Face { ..*self })
+    } }
 }
 
 impl<'a> Face<'a> {
@@ -70,69 +65,36 @@ impl<'a> Face<'a> {
     }
 
     pub fn attach_file(&self, filepathname: &str) -> FtResult<()> {
-        let err = unsafe { ffi::FT_Attach_File(self.raw, filepathname.as_ptr() as *const _) };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Attach_File(self.raw, filepathname.as_ptr() as *const _) })
     }
 
     pub fn reference(&self) -> FtResult<()> {
-        let err = unsafe { ffi::FT_Reference_Face(self.raw) };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Reference_Face(self.raw) })
     }
 
     pub fn set_char_size(&self, char_width: isize, char_height: isize, horz_resolution: u32,
                          vert_resolution: u32) -> FtResult<()> {
-        let err = unsafe {
+        ::error::from_ftret(unsafe {
             ffi::FT_Set_Char_Size(self.raw, char_width as ffi::FT_F26Dot6,
                                   char_height as ffi::FT_F26Dot6, horz_resolution,
                                   vert_resolution)
-        };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        })
     }
 
     pub fn set_pixel_sizes(&self, pixel_width: u32, pixel_height: u32) -> FtResult<()> {
-        let err = unsafe { ffi::FT_Set_Pixel_Sizes(self.raw, pixel_width, pixel_height) };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Set_Pixel_Sizes(self.raw, pixel_width, pixel_height) })
     }
 
     pub fn load_glyph(&self, glyph_index: u32, load_flags: LoadFlag) -> FtResult<()> {
-        let err = unsafe { ffi::FT_Load_Glyph(self.raw, glyph_index, load_flags.bits) };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Load_Glyph(self.raw, glyph_index, load_flags.bits) })
     }
 
     pub fn load_char(&self, char_code: usize, load_flags: LoadFlag) -> FtResult<()> {
-        let err =
-            unsafe { ffi::FT_Load_Char(self.raw, char_code as ffi::FT_ULong, load_flags.bits) };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Load_Char(self.raw, char_code as ffi::FT_ULong, load_flags.bits) })
     }
 
     pub fn set_transform(&self, matrix: &mut Matrix, delta: &mut Vector) {
-        unsafe {
-            ffi::FT_Set_Transform(self.raw, matrix, delta);
-        }
+        unsafe { ffi::FT_Set_Transform(self.raw, matrix, delta); }
     }
 
     pub fn get_char_index(&self, charcode: usize) -> u32 {
@@ -143,23 +105,17 @@ impl<'a> Face<'a> {
         -> FtResult<Vector> {
         let mut vec = Vector { x: 0, y: 0 };
 
-        let err = unsafe {
+        ::error::from_ftret(unsafe {
             ffi::FT_Get_Kerning(self.raw, left_char_index, right_char_index,
                                 kern_mode as u32, &mut vec)
-        };
-        if err == ffi::FT_Err_Ok {
-            Ok(vec)
-        } else {
-            Err(err.into())
-        }
+        })?;
+        Ok(vec)
     }
 
     // According to FreeType doc, each time you load a new glyph image,
     // the previous one is erased from the glyph slot.
     #[inline(always)]
-    pub fn glyph(&self) -> &GlyphSlot {
-        &self.glyph
-    }
+    pub fn glyph(&self) -> &GlyphSlot { &self.glyph }
 
     #[inline(always)]
     pub fn has_horizontal(&self) -> bool {
@@ -306,14 +262,8 @@ impl<'a> fmt::Debug for Face<'a> {
 }
 
 impl<'a> Drop for Face<'a> {
-    fn drop(&mut self) {
-        let err = unsafe { ffi::FT_Done_Face(self.raw) };
-        if err != ffi::FT_Err_Ok {
-            panic!("Failed to drop face");
-        }
-        let err = unsafe { ffi::FT_Done_Library(self.library_raw) };
-        if err != ffi::FT_Err_Ok {
-            panic!("Failed to drop library")
-        }
-    }
+    fn drop(&mut self) { unsafe {
+        ::error::from_ftret(ffi::FT_Done_Face(self.raw)).expect("Failed to drop face");
+        ::error::from_ftret(ffi::FT_Done_Library(self.library_raw)).expect("Failed to drop library");
+    } }
 }

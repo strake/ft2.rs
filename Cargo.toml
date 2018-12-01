@@ -12,6 +12,7 @@ repository = "https://github.com/strake/ft2.rs"
 name = "freetype"
 
 [dependencies]
+fallible = "0.1.2"
 flags = "0.1"
 libc = { version = "0.2.1", default-features = false }
 null-terminated = "0.3"

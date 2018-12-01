@@ -27,12 +27,7 @@ impl Glyph {
         if let Some(ref mut d) = delta {
             p_delta = d as *mut Vector;
         }
-        let err = unsafe { ffi::FT_Glyph_Transform(self.raw, p_matrix, p_delta) };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Glyph_Transform(self.raw, p_matrix, p_delta) })
     }
 
     /// Return a glyph's ‘control box’. The control box encloses all the outline's points,
@@ -62,13 +57,11 @@ impl Glyph {
         if let Some(ref mut o) = origin {
             p_origin = o as *mut Vector;
         }
-        let err =
-            unsafe { ffi::FT_Glyph_To_Bitmap(&mut the_glyph, render_mode as u32, p_origin, 0) };
-        if err == ffi::FT_Err_Ok {
-            Ok(unsafe { BitmapGlyph::from_raw(self.library_raw, the_glyph as ffi::FT_BitmapGlyph) })
-        } else {
-            Err(err.into())
-        }
+
+        Ok(unsafe {
+            ::error::from_ftret(ffi::FT_Glyph_To_Bitmap(&mut the_glyph, render_mode as u32, p_origin, 0))?;
+            BitmapGlyph::from_raw(self.library_raw, the_glyph as ffi::FT_BitmapGlyph)
+        })
     }
 
     pub fn advance_x(&self) -> isize {
@@ -95,27 +88,18 @@ impl Glyph {
     }
 }
 
-impl Clone for Glyph {
-    fn clone(&self) -> Self {
+impl ::fallible::TryClone for Glyph {
+    type Error = ::error::Error;
+    fn try_clone(&self) -> FtResult<Self> { unsafe {
         let mut target = null_mut();
-
-        let err = unsafe { ffi::FT_Glyph_Copy(self.raw, &mut target) };
-        if err == ffi::FT_Err_Ok {
-            unsafe { Glyph::from_raw(self.library_raw, target) }
-        } else {
-            panic!("Failed to copy glyph")
-        }
-    }
+        ::error::from_ftret(ffi::FT_Glyph_Copy(self.raw, &mut target))?;
+        Ok(Glyph::from_raw(self.library_raw, target))
+    } }
 }
 
 impl Drop for Glyph {
-    fn drop(&mut self) {
-        let err = unsafe {
-            ffi::FT_Done_Glyph(self.raw);
-            ffi::FT_Done_Library(self.library_raw)
-        };
-        if err != ffi::FT_Err_Ok {
-            panic!("Failed to drop library")
-        }
-    }
+    fn drop(&mut self) { unsafe {
+        ffi::FT_Done_Glyph(self.raw);
+        ::error::from_ftret(ffi::FT_Done_Library(self.library_raw)).expect("Failed to drop library");
+    } }
 }

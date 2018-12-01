@@ -43,57 +43,32 @@ impl Library {
     /// This function is used to create a new FreeType library instance and add the default
     /// modules. It returns a struct encapsulating the freetype library. The library is correctly
     /// discarded when the struct is dropped.
-    pub fn init() -> FtResult<Self> {
+    pub fn init() -> FtResult<Self> { unsafe {
         let mut raw = null_mut();
-
-        let err = unsafe { ffi::FT_New_Library(&mut MEMORY, &mut raw) };
-        if err == ffi::FT_Err_Ok {
-            unsafe { ffi::FT_Add_Default_Modules(raw); }
-            Ok(Library { raw })
-        } else {
-            Err(err.into())
-        }
-    }
+        ::error::from_ftret(ffi::FT_New_Library(&mut MEMORY, &mut raw))?;
+        ffi::FT_Add_Default_Modules(raw);
+        Ok(Library { raw })
+    } }
 
     /// Open a font file using its pathname. `face_index` should be 0 if there is only 1 font
     /// in the file.
     pub fn new_face<P>(&self, path: P, face_index: isize) -> FtResult<Face<'static>>
-        where P: AsRef<Nul<u8>>
-    {
+      where P: AsRef<Nul<u8>> { unsafe {
         let mut face = null_mut();
-
-        let err = unsafe {
-            ffi::FT_New_Face(self.raw, path.as_ref().as_ptr() as *const _, face_index as ffi::FT_Long, &mut face)
-        };
-        if err == ffi::FT_Err_Ok {
-            Ok(unsafe { Face::from_raw(self.raw, face) })
-        } else {
-            Err(err.into())
-        }
-    }
+        ::error::from_ftret(ffi::FT_New_Face(self.raw, path.as_ref().as_ptr() as *const _, face_index as ffi::FT_Long, &mut face))?;
+        Ok(Face::from_raw(self.raw, face))
+    } }
 
     /// Similar to `new_face`, but loads file data from a byte array in memory
-    pub fn new_memory_face<'a>(&self, buffer: &'a [u8], face_index: isize) -> FtResult<Face<'a>> {
+    pub fn new_memory_face<'a>(&self, buffer: &'a [u8], face_index: isize) -> FtResult<Face<'a>> { unsafe {
         let mut face = null_mut();
-
-        let err = unsafe {
-            ffi::FT_New_Memory_Face(self.raw, buffer.as_ptr(), buffer.len() as ffi::FT_Long,
-                                    face_index as ffi::FT_Long, &mut face)
-        };
-        if err == ffi::FT_Err_Ok {
-            Ok(unsafe { Face::from_raw(self.raw, face) })
-        } else {
-            Err(err.into())
-        }
-    }
+        ::error::from_ftret(ffi::FT_New_Memory_Face(self.raw, buffer.as_ptr(), buffer.len() as ffi::FT_Long,
+                                                    face_index as ffi::FT_Long, &mut face))?;
+        Ok(Face::from_raw(self.raw, face))
+    } }
 
     pub fn set_lcd_filter(&self, lcd_filter: LcdFilter) -> FtResult<()> {
-        let err = unsafe { ffi::FT_Library_SetLcdFilter(self.raw, lcd_filter as u32) };
-        if err == ffi::FT_Err_Ok {
-            Ok(())
-        } else {
-            Err(err.into())
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Library_SetLcdFilter(self.raw, lcd_filter as u32) })
     }
 
     /// Get the underlying library object
@@ -102,9 +77,6 @@ impl Library {
 
 impl Drop for Library {
     fn drop(&mut self) {
-        let err = unsafe { ffi::FT_Done_Library(self.raw) };
-        if err != ffi::FT_Err_Ok {
-            panic!("Failed to drop library")
-        }
+        ::error::from_ftret(unsafe { ffi::FT_Done_Library(self.raw) }).expect("Failed to drop library");
     }
 }

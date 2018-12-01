@@ -308,3 +308,7 @@ impl Error {
         }
     }
 }
+
+pub(crate) fn from_ftret(c: i32) -> FtResult<()> {
+    if c == ffi::FT_Err_Ok { Ok(()) } else { Err(c.into()) }
+}

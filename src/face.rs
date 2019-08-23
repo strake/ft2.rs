@@ -229,6 +229,9 @@ impl<'a> Face<'a> {
         unsafe { (*self.raw).underline_thickness }
     }
 
+    #[inline(always)]
+    pub fn num_faces(&self) -> i16 { unsafe { (*self.raw).num_faces as i16 } }
+
     pub fn family_name(&self) -> Option<&Nul<u8>> {
         unsafe { ((*self.raw).family_name as *mut u8).as_ref() }
             .map(|p| unsafe { Nul::new_unchecked(p) })

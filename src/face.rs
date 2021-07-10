@@ -256,7 +256,7 @@ impl<'a> fmt::Debug for Face<'a> {
         let name = self.style_name()
                        .and_then(|s| ::core::str::from_utf8(&s[..]).ok())
                        .unwrap_or("[unknown name]");
-        try!(form.write_str("Font Face: "));
+        form.write_str("Font Face: ")?;
         form.write_str(&name[..])
     }
 }

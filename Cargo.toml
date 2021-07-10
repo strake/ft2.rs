@@ -1,6 +1,6 @@
 [package]
 name = "ft2"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Coeuvre <coeuvre@gmail.com>", "M Farkas-Dyck <strake888@gmail.com>"]
 keywords = ["freetype", "font", "glyph"]
 description = "Bonds for FreeType font library"

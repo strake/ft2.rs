@@ -108,8 +108,9 @@ impl Glyph {
 
 impl ::fallible::TryClone for Glyph {
     type Error = ::error::Error;
-    fn try_clone(&self) -> FtResult<Self> { unsafe {
+    fn try_clone(&self) -> FtResult<Self> { 
         let mut target = null_mut();
+    unsafe {
         ::error::from_ftret(ffi::FT_Glyph_Copy(self.raw, &mut target))?;
         Ok(Glyph::from_raw(self.library_raw, target))
     } }

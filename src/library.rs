@@ -43,12 +43,14 @@ impl Library {
     /// This function is used to create a new FreeType library instance and add the default
     /// modules. It returns a struct encapsulating the freetype library. The library is correctly
     /// discarded when the struct is dropped.
-    pub fn init() -> FtResult<Self> { unsafe {
+    pub fn init() -> FtResult<Self> { 
         let mut raw = null_mut();
-        ::error::from_ftret(ffi::FT_New_Library(&mut MEMORY, &mut raw))?;
-        ffi::FT_Add_Default_Modules(raw);
+        unsafe {
+            ::error::from_ftret(ffi::FT_New_Library(&mut MEMORY, &mut raw))?;
+            ffi::FT_Add_Default_Modules(raw);
+        }
         Ok(Library { raw })
-    } }
+    }
 
     /// Open a font file using its pathname. `face_index` should be 0 if there is only 1 font
     /// in the file.

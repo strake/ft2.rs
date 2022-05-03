@@ -29,8 +29,9 @@ impl BitmapGlyph {
 
 impl ::fallible::TryClone for BitmapGlyph {
     type Error = ::error::Error;
-    fn try_clone(&self) -> ::FtResult<Self> { unsafe {
+    fn try_clone(&self) -> ::FtResult<Self> { 
         let mut target = null_mut();
+    unsafe {
         ::error::from_ftret(ffi::FT_Glyph_Copy(self.raw as ffi::FT_Glyph, &mut target))?;
         Ok(BitmapGlyph::from_raw(self.library_raw, target as ffi::FT_BitmapGlyph))
     } }
